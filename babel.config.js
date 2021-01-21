@@ -1,3 +1,9 @@
+/*
+ * @Author: jweboy
+ * @Date: 2020-12-13 22:47:57
+ * @LastEditors: jweboy
+ * @LastEditTime: 2021-01-09 16:35:02
+ */
 const plugins = []
 
 if (process.env.UNI_OPT_TREESHAKINGNG) {
@@ -37,7 +43,7 @@ if (
   } catch (e) {}
 }
 
-process.UNI_LIBRARIES = process.UNI_LIBRARIES || ['@dcloudio/uni-ui']
+process.UNI_LIBRARIES = process.UNI_LIBRARIES || ['@dcloudio/uni-ui', 'vant']
 process.UNI_LIBRARIES.forEach(libraryName => {
   plugins.push([
     'import',

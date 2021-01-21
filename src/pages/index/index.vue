@@ -1,14 +1,26 @@
+<!--
+ * @Author: jweboy
+ * @Date: 2020-12-13 22:47:57
+ * @LastEditors: jweboy
+ * @LastEditTime: 2021-01-17 18:28:51
+-->
 <template>
 	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
+		<!-- <image class="logo" src="/static/logo.png"></image>
 		<view>
 			<text class="title">{{title}}</text>
-		</view>
+		</view> -->
+		<check-in />
 	</view>
 </template>
 
 <script>
+	import CheckIn from '../checkin'
+	import Person from '../person'
+	import Withdrawal from '../withdrawal/result'
+
 	export default {
+		components: { Person, Withdrawal, CheckIn },
 		data() {
 			return {
 				title: 'Hello'
