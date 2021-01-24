@@ -2,7 +2,7 @@
  * @Author: jweboy
  * @Date: 2020-12-13 22:47:57
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-17 18:28:51
+ * @LastEditTime: 2021-01-24 21:50:54
 -->
 <template>
 	<view class="content">
@@ -10,17 +10,19 @@
 		<view>
 			<text class="title">{{title}}</text>
 		</view> -->
-		<check-in />
+		<!-- <check-in /> -->
+		home page
 	</view>
 </template>
 
 <script>
-	import CheckIn from '../checkin'
-	import Person from '../person'
-	import Withdrawal from '../withdrawal/result'
+import '@/static/api.png'
+	// import CheckIn from '../checkin'
+	// import Person from '../person'
+	// import Withdrawal from '../withdrawal/result'
 
 	export default {
-		components: { Person, Withdrawal, CheckIn },
+		// components: { Person, CheckIn },
 		data() {
 			return {
 				title: 'Hello'

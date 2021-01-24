@@ -82,7 +82,7 @@ export default {
 
 <style lang="less" scoped>
 .navbar {
-  // background-image: url('../assets/navbar.jpeg');
+  // background-image: url('../static/navbar.jpeg');
   background-size: cover;
 }
 .container {

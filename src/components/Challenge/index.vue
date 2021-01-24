@@ -2,26 +2,46 @@
  * @Author: jweboy
  * @Date: 2021-01-19 21:51:32
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-19 22:37:56
+ * @LastEditTime: 2021-01-24 21:58:13
 -->
 <template>
   <view class="challenge">
     <text class="title">早起挑战赛</text>
     <view class="card">
       <view class="top">
-        <text class="subtitle">恭喜获得奖励金</text>
-        <text class="desc">本期已有{{data.count}}人报名</text>
+        <text class="subtitle" v-if="success">恭喜获得奖励金</text>
+        <text class="desc" v-if="signup">本期已有{{data.count}}人报名</text>
         <view class="result">
-          <view class="text">{{data.no}}期奖金总额(元)</view>
-          <view class="amount">{{data.amount}}</view>
-          <view class="text">上期人均分得 {{data.perAmount}} 元</view>
+          <template v-if="success" class="success">
+            <view class="success-title">{{data.checkin}}人挑战成功</view>
+            <view>
+              <text class="success-amount">{{data.amount}}</text>
+              <text class="success-unit">元</text>
+            </view>
+            <text class="success-tips">奖励金已收入个人账户中，可在【我的】页面中查看</text>
+          </template>
+          <template v-if="checkinSuccess" class="checkin-success">
+            <view class="checkin-success-title">打卡成功</view>
+            <view class="checkin-success-checkin">已有{{data.checkin}}人打卡成功</view>
+            <view class="checkin-success-tips">奖励金结算中…</view>
+          </template>
+          <template v-else>
+            <view class="text" v-if="totalBonusOfThisPorid">本期奖金总额(元)</view>
+            <view class="text" v-if="totalBonusOfCurrPorid">{{data.no}}期奖金总额(元)</view>
+            <view class="amount" v-if="amount">{{data.amount}}</view>
+            <view class="text"  v-if="perAmount">上期人均分得 {{data.perAmount}} 元</view>
+            <view class="text" v-if="checkin">已有 {{data.checkin}} 人打卡成功</view>
+            <view class="fail" v-if="fail">{{data.no}}期挑战失败</view>
+          </template>
         </view>    
         <view class="action">
-          <template v-if="status === 'toBegin'">
-            <button class="btn disabled"  @click="onSubmit">
-              <text :class="styles.text">6:30-8:30开始打卡</text>
-            </button>  
-          </template>
+          <daily-button :class-name="status === 'toBeginInNextDayByUser' && 'disabled'"  @click="onSubmit(status)" :title="btnTitle"/>
+          <view class="checkbox" v-if="protocol">
+            <checkbox :value="isRead" style="transform:scale(0.5)" />
+            <view>我已阅读并同意 
+              <text class="protocol">《用户协议》</text>
+            </view>
+          </view>
         </view>
       </view>
       <view class="bottom">
@@ -29,9 +49,9 @@
           <text>打卡成功后分失败人的钱</text>
         </view>
         <view class="step-thumbs">
-          <image :src="require('../../assets/glod.png')" mode="aspectFill" class="thumb" /> 
-          <image :src="require('../../assets/clock.png')" class="thumb" /> 
-          <image :src="require('../../assets/wallet.png')" class="thumb" />  
+          <image :src="require('../../static/glod.png')" mode="aspectFill" class="thumb" /> 
+          <image :src="require('../../static/clock.png')" class="thumb" /> 
+          <image :src="require('../../static/wallet.png')" class="thumb" />  
         </view> 
         <view class="step-desc">
           <text>支付保证金</text>
@@ -44,22 +64,85 @@
 </template>
 
 <script>
-import styles from './index.less'
-import glod from '../../assets/glod.png'
+import glod from '../../static/glod.png';
+import DailyButton from '../Button'
 
 export default {
+  components: { DailyButton },
   props: ['onSubmit'],
+  computed: {
+    signup() {
+      return this.status !== 'successInNextDayAfterNoonByUser'
+    },
+    totalBonusOfCurrPorid() {
+      return this.status === 'toBegin' || this.status === 'fistEnterByUser' || this.status === 'toBeginInNextDayByUser' ||  this.status === 'fistEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
+    },
+    totalBonusOfThisPorid() {
+      return this.status === 'inProgressInNextDayByUser'
+    },
+    perAmount() {
+      return this.status === 'toBegin' || this.status === 'fistEnterByUser' || this.status === 'toBeginInNextDayByUser' || this.status === 'fistEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
+    },
+    checkin() {
+      return this.status === 'inProgressInNextDayByUser'
+    },
+    btnTitle() {
+      switch(this.status) {
+        // case 'toBegin':
+        //   return '我不服，我要赚回保证金';
+        case 'fistEnterByUser':
+          return '支付2.00元    立即参与';
+        case 'inProgressInNextDayByUser':
+          return '02:37:30结束  立即打卡';
+        case 'failInNextDayByUser':
+          return '我不服，我要赚回保证金';
+        case 'successInNextDayAfterNoonByUser':
+          return '我要继续参加今日赛';
+        case 'successInNextDayByUser':
+          return '我要继续参加今日赛';
+        case 'toBeginInNextDayByUser':
+          return '6:30-8:30开始打卡';
+        case 'fistEnterByNewUser':
+          return '新人支付0.99元参与';
+        case 'paySuccessInNextDayByUser':
+          return '明日6:30-8:30开始打卡';
+        default:
+          return '';
+      }
+    },
+    protocol() {
+      return this.status === 'fistEnterByUser' || this.status === 'fistEnterByNewUser'
+    },
+    fail() {
+      return this.status === 'failInNextDayByUser'
+    },
+    amount() {
+      return this.status !== 'failInNextDayByUser' && this.status !== 'successInNextDayAfterNoonByUser'
+    },
+    success() {
+      return this.status === 'successInNextDayAfterNoonByUser'
+    },
+    checkinSuccess() {
+      return this.status === 'successInNextDayByUser'
+    },
+    // price() {
+    //   return this.status === ''
+    // }
+  },
   data() {
     return {
-      styles,
-      status: 'inProgress',
+      // inProgressInNextDayByUser failInNextDayByUser successInNextDayAfterNoonByUser  successInNextDayByUser fistEnterByUser
+      status: 'paySuccessInNextDayByUser',
       glod,
       data: {
         count: 23324,
         no: '20201230',
-        amount: '23432344',
+        amount: '2344',
         perAmount:'3.5',
-      }
+        checkin: 3434,
+        price: 2
+      },
+      isRead: false,
     }
   }
 }
@@ -67,7 +150,7 @@ export default {
 
 <style lang="less" scoped>
 .challenge {
-  margin: 68rpx 60rpx 0 60rpx;
+  margin: 264rpx 60rpx 0 60rpx;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -77,7 +160,7 @@ export default {
     text-shadow: 0 3px 0 #6D3DEC;
   }
   .card {
-    height: 732rpx;
+    height: 742rpx;
     border: 12rpx solid #FF7F9F;
     background-color: #9E0A3B;
     border-radius: 16rpx;
@@ -144,6 +227,43 @@ export default {
       font-weight: 500;
       clear: #fff;
     }
+    .success {
+      &-title {
+        font-size: 12px;
+        color: #ffffb8;
+      }
+      &-amount {
+        font-size: 45px;
+        color: #ffffb8;
+      }
+      &-unit {
+        font-size: 12px;
+        color: #ffffb8;
+      }
+      &-tips {
+        color: #a60c0c;
+        font-size: 10px;
+      }
+    }
+    .checkin-success {
+      &-title {
+        font-size: 32px;
+        color: #ffffb8;
+      }
+      &-checkin {
+        margin: 16rpx 0;
+        font-size: 12px;
+        color: #ffffb8;
+      }
+      &-tips {
+        color: #ffffff;
+        font-size: 16px;
+      }
+    }
+    .fail {
+      color: #fff;
+      font-size: 16px;
+    }
     .desc {
       font-size: 14px;
       color: #fff;
@@ -154,7 +274,7 @@ export default {
       color: #FFFFB8;
     }
     .text {
-      font-size: 14px;
+      font-size: 12px;
       color: #FFFFB8;
     }
     .tips {
@@ -165,35 +285,16 @@ export default {
   .action {
     height: 100%;
     display: flex;
-    align-items: center;
+    justify-content: center;
     padding: 0 40rpx;
-    .btn {
-      width: 100%;
-      height: 92rpx;
-      line-height: 92rpx;
-      background-image: linear-gradient(180deg, #FFD73F 0%, #FFCE15 100%);
-      box-shadow: 0 4px 0 0 #FF9612, 0 6px 6px 0 rgba(165,7,49,0.50), inset 0 1px 3px 0 #FFF6E6;
-      border-radius: 8rpx;
-      font-size: 16px;
-      &.disabled {
-        background-color: #d51f1f;
-        color: #ff8fa6;
-        background-image: none;
-        box-shadow: none;
-      }
-    }
-    .text {
-      font-size: 18px;
-      color: #AD2102;
-    }
-    .check-area {
+    flex-direction: column;
+    .checkbox {
       color: #fff;
       font-size: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-top: 20rpx;
       .protocol {
         color: orange;
       }

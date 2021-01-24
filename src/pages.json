@@ -1,16 +1,54 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+	"pages": [
 		{
-			"path": "pages/index/index",
+			"path": "pages/person/index",
 			"style": {
-				"navigationBarTitleText": "uni-app"
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/checkin/index",
+			"style": {
+				"navigationBarTitleText": "早起打卡"
+			}
+		},
+		// {
+		// 	"path": "pages/person/index",
+		// 	"style": {
+		// 		"navigationBarTitleText": "我的"
+		// 	}
+		// },
+		{
+			"path": "pages/withdrawal/index",
+			"style": {
+				"navigationBarTitleText": "提现"
 			}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
+		"navigationBarTitleText": "早起打卡",
 		"navigationBarBackgroundColor": "#F8F8F8",
 		"backgroundColor": "#F8F8F8"
+	},
+	"tabBar": {
+    "color": "#9096ad",
+    "selectedColor": "#192b80",
+		"backgroundColor": "#fff",
+		"fontSize": 12,
+    "list": [
+			{
+				"pagePath": "pages/checkin/index",
+				"text": "早起打卡",
+				"iconPath": "static/api.png",
+				"selectedIconPath": "static/clock.png"
+			},
+			{
+				"pagePath": "pages/person/index",
+				"text": "我的",
+				"iconPath": "static/api.png",
+				"selectedIconPath": "static/clock.png"
+			}		
+		]
 	}
 }
