@@ -2,46 +2,50 @@
  * @Author: jweboy
  * @Date: 2021-01-19 21:51:32
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-24 21:58:13
+ * @LastEditTime: 2021-01-31 11:24:57
 -->
 <template>
   <view class="challenge">
     <text class="title">早起挑战赛</text>
-    <view class="card">
+    <view class="card" v-if="!!status">
       <view class="top">
         <text class="subtitle" v-if="success">恭喜获得奖励金</text>
-        <text class="desc" v-if="signup">本期已有{{data.count}}人报名</text>
+        <text class="desc" v-if="signup">本期已有{{info.applyCount}}人报名</text>
         <view class="result">
           <template v-if="success" class="success">
-            <view class="success-title">{{data.checkin}}人挑战成功</view>
+            <view class="success-title">{{info.lastPunchCount}}人挑战成功</view>
             <view>
-              <text class="success-amount">{{data.amount}}</text>
+              <text class="success-amount">{{info.totalAmount}}</text>
               <text class="success-unit">元</text>
             </view>
             <text class="success-tips">奖励金已收入个人账户中，可在【我的】页面中查看</text>
           </template>
           <template v-if="checkinSuccess" class="checkin-success">
             <view class="checkin-success-title">打卡成功</view>
-            <view class="checkin-success-checkin">已有{{data.checkin}}人打卡成功</view>
+            <view class="checkin-success-checkin">已有{{info.lastPunchCount}}人打卡成功</view>
             <view class="checkin-success-tips">奖励金结算中…</view>
           </template>
           <template v-else>
             <view class="text" v-if="totalBonusOfThisPorid">本期奖金总额(元)</view>
-            <view class="text" v-if="totalBonusOfCurrPorid">{{data.no}}期奖金总额(元)</view>
-            <view class="amount" v-if="amount">{{data.amount}}</view>
-            <view class="text"  v-if="perAmount">上期人均分得 {{data.perAmount}} 元</view>
-            <view class="text" v-if="checkin">已有 {{data.checkin}} 人打卡成功</view>
-            <view class="fail" v-if="fail">{{data.no}}期挑战失败</view>
+            <view class="text" v-if="totalBonusOfCurrPorid">{{info.activityName}}奖金总额(元)</view>
+            <view class="amount" v-if="amount">{{totalAmount}}</view>
+            <view class="text"  v-if="perAmount">上期人均分得 {{lastPerAmount}} 元</view>
+            <view class="text" v-if="checkin">已有 {{info.lastPunchCount}} 人打卡成功</view>
+            <view class="fail" v-if="fail">{{info.activityName}}挑战失败</view>
           </template>
         </view>    
         <view class="action">
-          <daily-button :class-name="status === 'toBeginInNextDayByUser' && 'disabled'"  @click="onSubmit(status)" :title="btnTitle"/>
-          <view class="checkbox" v-if="protocol">
-            <checkbox :value="isRead" style="transform:scale(0.5)" />
-            <view>我已阅读并同意 
-              <text class="protocol">《用户协议》</text>
-            </view>
-          </view>
+          <daily-button :class-name="status === 'toBeginInNextDayByUser' && 'disabled'"  @on-click="onSubmit" :title="btnTitle"/>
+          <checkbox-group class="checkbox" v-if="protocol" @change="onProtocolChange">
+              <label>
+                <checkbox :value="isRead" style="transform:scale(0.5)" />
+              </label>
+              <label>
+                <view>我已阅读并同意 
+                  <text class="protocol">《用户协议》</text>
+                </view>
+              </label>
+          </checkbox-group>
         </view>
       </view>
       <view class="bottom">
@@ -66,22 +70,39 @@
 <script>
 import glod from '../../static/glod.png';
 import DailyButton from '../Button'
+import { formatDecimalPlaces } from '@/utils/number'
 
 export default {
   components: { DailyButton },
-  props: ['onSubmit'],
+  props: ['status', 'info'],
+  methods: {
+    onProtocolChange() {
+      this.isRead = !this.isRead;
+    },
+    onSubmit() {
+      if (!this.isRead) {
+        uni.showToast({
+          title: '请先勾选用户协议',
+          icon: 'none',
+          duration: 1000,
+        });
+        return;
+      }
+      this.$emit('onSubmit', this.info);
+    }
+  },
   computed: {
     signup() {
       return this.status !== 'successInNextDayAfterNoonByUser'
     },
     totalBonusOfCurrPorid() {
-      return this.status === 'toBegin' || this.status === 'fistEnterByUser' || this.status === 'toBeginInNextDayByUser' ||  this.status === 'fistEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
+      return this.status === 'toBegin' || this.status === 'firstEnterByUser' || this.status === 'toBeginInNextDayByUser' ||  this.status === 'firstEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
     },
     totalBonusOfThisPorid() {
       return this.status === 'inProgressInNextDayByUser'
     },
     perAmount() {
-      return this.status === 'toBegin' || this.status === 'fistEnterByUser' || this.status === 'toBeginInNextDayByUser' || this.status === 'fistEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
+      return this.status === 'toBegin' || this.status === 'firstEnterByUser' || this.status === 'toBeginInNextDayByUser' || this.status === 'firstEnterByNewUser'  || this.status === 'paySuccessInNextDayByUser';
     },
     checkin() {
       return this.status === 'inProgressInNextDayByUser'
@@ -90,7 +111,7 @@ export default {
       switch(this.status) {
         // case 'toBegin':
         //   return '我不服，我要赚回保证金';
-        case 'fistEnterByUser':
+        case 'firstEnterByUser':
           return '支付2.00元    立即参与';
         case 'inProgressInNextDayByUser':
           return '02:37:30结束  立即打卡';
@@ -102,7 +123,7 @@ export default {
           return '我要继续参加今日赛';
         case 'toBeginInNextDayByUser':
           return '6:30-8:30开始打卡';
-        case 'fistEnterByNewUser':
+        case 'firstEnterByNewUser':
           return '新人支付0.99元参与';
         case 'paySuccessInNextDayByUser':
           return '明日6:30-8:30开始打卡';
@@ -111,7 +132,7 @@ export default {
       }
     },
     protocol() {
-      return this.status === 'fistEnterByUser' || this.status === 'fistEnterByNewUser'
+      return this.status === 'firstEnterByUser' || this.status === 'firstEnterByNewUser'
     },
     fail() {
       return this.status === 'failInNextDayByUser'
@@ -125,26 +146,26 @@ export default {
     checkinSuccess() {
       return this.status === 'successInNextDayByUser'
     },
+    totalAmount() {
+      const { totalAmount } = this.info;
+      return formatDecimalPlaces(totalAmount);
+    },
+    lastPerAmount() {
+      const { lastPerAmount } = this.info;
+      return formatDecimalPlaces(lastPerAmount);
+    }
     // price() {
     //   return this.status === ''
     // }
   },
   data() {
     return {
-      // inProgressInNextDayByUser failInNextDayByUser successInNextDayAfterNoonByUser  successInNextDayByUser fistEnterByUser
-      status: 'paySuccessInNextDayByUser',
+      // inProgressInNextDayByUser failInNextDayByUser successInNextDayAfterNoonByUser  successInNextDayByUser firstEnterByUser
+      // status: '',
       glod,
-      data: {
-        count: 23324,
-        no: '20201230',
-        amount: '2344',
-        perAmount:'3.5',
-        checkin: 3434,
-        price: 2
-      },
       isRead: false,
     }
-  }
+  },
 }
 </script>
 

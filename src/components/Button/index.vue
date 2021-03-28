@@ -2,7 +2,7 @@
  * @Author: jweboy
  * @Date: 2021-01-23 20:03:40
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-24 15:41:01
+ * @LastEditTime: 2021-01-30 23:37:06
 -->
 <template>
   <button :class="btnClass"  @click="onClick">
@@ -22,9 +22,10 @@ export default {
       default: '标题',
       type: String,
     },
-    onClick: {
-      default: () => {},
-      type: Function,
+  },
+  methods: {
+    onClick() {
+      this.$emit('on-click');
     }
   },
   computed: {

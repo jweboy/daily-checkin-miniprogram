@@ -2,30 +2,36 @@
  * @Author: jweboy
  * @Date: 2021-01-24 15:44:11
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-24 16:24:36
+ * @LastEditTime: 2021-01-28 23:08:30
 -->
 <template>
   <view class="health-item">
-    <text class="black-text">1</text>
+    <text class="black-text">{{index}}</text>
     <view class="left">
-      <image mode="scaleToFill" class="thumb" src="https://buddy.works/guides/covers/test-nodejs-app/share-nodejs-logo.png" />
-      <text class="black-text">玉房</text>
+      <image mode="scaleToFill" class="thumb" :src="data.avatar" />
+      <text class="black-text">{{data.nickName}}</text>
     </view>
     <view class="center">
-      <text class="grey-text">打卡3天</text>
+      <text class="grey-text">打卡{{data.punchDayCount}}天</text>
     </view>
     <view class="right">
-      <text class="grey-text">累计收益2976.67元</text>
+      <text class="grey-text">累计收益{{totalAmount}}</text>
     </view>
   </view>
 </template>
 
 <script>
+import { formatPriceWithUnit } from '@/utils/number'
+
 export default {
-  data() {
-    return {
+  props: ['data', 'index'],
+  computed: {
+    totalAmount() {
+      const { totalAmount } = this.data;
+      
+      return formatPriceWithUnit(totalAmount);
     }
-  }
+  },
 }
 </script>
 

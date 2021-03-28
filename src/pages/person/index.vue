@@ -2,14 +2,14 @@
  * @Author: jweboy
  * @Date: 2021-01-05 20:44:23
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-24 21:56:16
+ * @LastEditTime: 2021-01-29 22:49:08
 -->
 <template>
   <view class="person">
     <view class="detail">
-      <image class="avatar" src="https://buddy.works/guides/covers/test-nodejs-app/share-nodejs-logo.png"></image>
+      <image class="avatar" :src="userInfo.avatar"></image>
       <view class="info">
-        <text class="username">小叮叮</text>
+        <text class="username">{{userInfo.nickName}}</text>
         <text class="desc">已坚持12天 健康达标率76.54%</text>
       </view>
     </view>
@@ -36,14 +36,100 @@
       </view>
     </view>
     <view class="tips">每日收益将于12:00结算到账</view>
-    <!-- <Tabs /> -->
+    <tabs :data="tabs" @on-click="onTabsClick" />
+    <view class="record-desc">- 显示最近30天的参与参与记录 -</view>
+    <view class="join-record">
+      <mescroll-body ref="mescrollRef" :up="upOption" @down="onDownRefresh" @up="onUpRefresh"  v-if="joinRecordList.length > 0">
+        <join-record v-for="(item, index) in joinRecordList" :key="index" :record="item" />
+      </mescroll-body>
+      <mescroll-empty v-else></mescroll-empty>
+    </view>
   </view>
 </template>
 
 <script>
+import { getUser } from '@/api/user';
+import { getApply } from '@/api/apply';
+import Tabs from '@/components/Tabs';
+import JoinRecord from '@/components/Item/JoinRecord';
+import MescrollMixin from "@/components/mescroll-uni/mescroll-mixins";
+
+// http://www.mescroll.com/uni.html
+
 export default {
+  mixins: [MescrollMixin],
+  components: { Tabs, JoinRecord },
   data() {
     return {
+      userInfo: {},
+      joinRecordList: [],
+      tabs: [
+        { title: '参与记录', key: 'joinRecord' },
+        { title: '收支明细', key: 'incomeExpenditure' },
+        { title: '提现明细', key: 'withdrawal' }
+      ],
+      upOption:{
+        textNoMore: '- 没有更多数据了 -'
+      }
+    }
+  },
+  mounted() {
+    // 获取当前用户信息
+    this.asyncGetUserInfo();
+    // 获取用户参与记录列表
+    this.asyncGetJoinRecord();
+  },
+  methods: {
+    // onInitScroll(scrollRef) {
+    //   this.mescroll = scrollRef
+    // },
+    onDownRefresh() {
+      console.log(this.mescroll)
+      this.asyncGetJoinRecord().then(() => {
+        // 请求成功,隐藏加载状态
+        this.mescroll.endSuccess();
+      }).catch(() => {
+        // 请求失败,隐藏加载状态
+        this.mescroll.endErr();
+      });
+    },
+    onUpRefresh() {
+      console.log(this.mescroll)
+      this.asyncGetJoinRecord().then((data) => {
+        // 请求成功,隐藏加载状态
+        this.mescroll.endByPage(data.pageSize, data.totalCount);
+      }).catch(() => {
+        // 请求失败,隐藏加载状态
+        this.mescroll.endErr();
+      });
+    },
+    onTabsClick() {
+      this.joinRecordList = [];
+      this.asyncGetJoinRecord();
+    },
+    asyncGetUserInfo() {
+      return getUser().then((data) => {
+        this.userInfo = data;
+      })
+    },
+    asyncGetJoinRecord() {
+      return getApply().then((data) => {
+        // this.joinRecordList = data;
+        this.joinRecordList = [
+          { status: 'success' },
+          { status:  'fail' }, 
+          { status: 'success' },
+          { status:  'fail' }, 
+          { status: 'success' },
+          { status:  'fail' }, 
+          { status: 'success' },
+          { status:  'fail' }, 
+          { status: 'success' },
+          { status:  'fail' }, 
+        ];
+
+        return data;
+      })
     }
   }
 }
@@ -176,6 +262,18 @@ export default {
     margin: 16rpx 40rpx 15rpx 40rpx;
     font-size: 12px;
     color: rgba(5, 7, 13, 0.45);
+  }
+  .record-desc {
+    padding: 24rpx 160rpx;
+    background-color: #fff;
+    font-size: 14px;
+    color: #9096ad;
+    margin-top: 8rpx;
+    border-bottom: solid 1px #e4e4e4;
+  }
+  .join-record {
+    height: 500rpx;
+    overflow-y: auto;
   }
 }
 </style>

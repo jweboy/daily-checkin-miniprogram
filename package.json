@@ -60,6 +60,8 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "flyio": "^0.6.2",
+    "mathjs": "^9.1.0",
+    "numeral": "^2.0.6",
     "qs": "^6.9.6",
     "regenerator-runtime": "^0.12.1",
     "vue": "^2.6.11",

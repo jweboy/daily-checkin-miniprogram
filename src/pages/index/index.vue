@@ -2,39 +2,74 @@
  * @Author: jweboy
  * @Date: 2020-12-13 22:47:57
  * @LastEditors: jweboy
- * @LastEditTime: 2021-01-24 21:50:54
+ * @LastEditTime: 2021-03-28 23:07:58
 -->
 <template>
-	<view class="content">
-		<!-- <image class="logo" src="/static/logo.png"></image>
-		<view>
-			<text class="title">{{title}}</text>
-		</view> -->
-		<!-- <check-in /> -->
-		home page
+	<view>
+		<button @getuserinfo="getUserInfo" openType="getUserInfo" class="btn" type="success">微信登陆</button>
 	</view>
 </template>
 
 <script>
-import '@/static/api.png'
-	// import CheckIn from '../checkin'
-	// import Person from '../person'
-	// import Withdrawal from '../withdrawal/result'
 
-	export default {
-		// components: { Person, CheckIn },
-		data() {
-			return {
-				title: 'Hello'
-			}
-		},
-		onLoad() {
+import { asyncGetLoginCode, asyncGetUserInfo } from '@/api/weixin';
+import { postAppletLogin } from '@/api/applet';
 
-		},
-		methods: {
+let timer = 0;
 
+export default {
+	data() {
+		return {}
+	},
+	async mounted() {
+		const token = uni.getStorageSync('token');
+		const pageUrl = '/pages/test-pay/index'
+		
+		if(token) {
+			// uni.navigateTo({ url: pageUrl });
+		} else {
+			// 首先获取到登陆的 code 并存储到本地
+			// this.getLoginCodeToStore();
+			const { code } = await asyncGetLoginCode();
+      uni.setStorageSync('loginCode', {
+        jsCode: code,
+        timestamp: +new Date(),
+      })
+			this.getUserInfo();
+			// 其次开启执行队列隔五分钟更新一次 code 值 (登陆返回的 code 有效期是五分钟)
+			timer = setInterval(this.getLoginCodeToStore, 5 * 60 * 1000);
+			// uni.navigateTo({ url: pageUrl });
 		}
+	},
+	destroyed() {
+    clearInterval(timer);
+    timer = 0;
+  },
+	methods: {
+		// 获取登陆返回的 code
+    getLoginCodeToStore: async () => {
+      const { code } = await asyncGetLoginCode();
+      uni.setStorageSync('loginCode', {
+        jsCode: code,
+        timestamp: +new Date(),
+      })
+    },
+    // 获取当前用户信息
+    getUserInfo: async (evt) => {
+      const { jsCode } = uni.getStorageSync('loginCode');
+      // const { iv, encryptedData } = await asyncGetUserInfo();
+			 const { iv, encryptedData } = evt.detail; 
+			//  console.log(evt.detail)
+      const { userToken, refreshToken } = await postAppletLogin({
+        encryptedData,
+        ivStr: iv,
+        jsCode,
+        accountType: 'PUNCH_APPLET'
+      });
+      // uni.setStorageSync('token', { userToken, refreshToken });
+   },
 	}
+}
 </script>
 
 <style>
