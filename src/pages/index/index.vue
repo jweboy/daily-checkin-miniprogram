@@ -2,24 +2,31 @@
  * @Author: jweboy
  * @Date: 2020-12-13 22:47:57
  * @LastEditors: jweboy
- * @LastEditTime: 2021-03-28 23:07:58
+ * @LastEditTime: 2021-03-31 21:17:08
 -->
 <template>
-	<view>
+	<view class="container">
+		<view class="header">
+			<image :src="logo" mode="aspectFit" class="logo" />
+		</view>
 		<button @getuserinfo="getUserInfo" openType="getUserInfo" class="btn" type="success">微信登陆</button>
 	</view>
 </template>
 
 <script>
 
-import { asyncGetLoginCode, asyncGetUserInfo } from '@/api/weixin';
+import { asyncGetLoginCode, asyncGetUserInfo, asyncCheckSession } from '@/api/weixin';
 import { postAppletLogin } from '@/api/applet';
+import { showErrorMsg, showSuccessMsg } from '../../utils/global'
+import logo from '../../static/logo.png'
 
 let timer = 0;
 
 export default {
 	data() {
-		return {}
+		return {
+			logo,
+		}
 	},
 	async mounted() {
 		const token = uni.getStorageSync('token');
@@ -54,36 +61,57 @@ export default {
         timestamp: +new Date(),
       })
     },
+		asyncRelogin: async () => {
+			const { jsCode } = uni.getStorageSync('loginCode');
+			const { iv, encryptedData } = await asyncGetUserInfo();
+			const { userToken, refreshToken } = await postAppletLogin({
+				encryptedData,
+				ivStr: iv,
+				jsCode,
+				accountType: 'PUNCH_APPLET'
+			});
+			uni.setStorageSync('token', { userToken, refreshToken });
+		},
     // 获取当前用户信息
-    getUserInfo: async (evt) => {
-      const { jsCode } = uni.getStorageSync('loginCode');
-      // const { iv, encryptedData } = await asyncGetUserInfo();
-			 const { iv, encryptedData } = evt.detail; 
-			//  console.log(evt.detail)
-      const { userToken, refreshToken } = await postAppletLogin({
-        encryptedData,
-        ivStr: iv,
-        jsCode,
-        accountType: 'PUNCH_APPLET'
-      });
-      // uni.setStorageSync('token', { userToken, refreshToken });
+    async getUserInfo() {
+			const token = uni.getStorageSync('token');
+			try {
+				await asyncCheckSession();
+				if(!token) {
+					await this.asyncRelogin();
+				}
+
+				showSuccessMsg('登陆成功');
+				setTimeout(() => {
+					uni.navigateTo({ url: '/pages/test-pay/index' });
+				}, 300);
+			} catch(err) {
+				this.asyncRelogin();
+			}
    },
 	}
 }
 </script>
 
 <style>
-	.content {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+	.container {
+		padding: 16px;
 	}
 
+	.header {
+		text-align: center;
+	}
+	
 	.logo {
+		margin: 100px auto auto auto;
 		height: 200rpx;
 		width: 200rpx;
-		margin: 200rpx auto 50rpx auto;
+		border-radius: 50%;
+		background-color: #ccc;
+	}
+
+	.btn {
+		margin-top: 60px;
 	}
 
 	.text-area {

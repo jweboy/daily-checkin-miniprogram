@@ -4,7 +4,7 @@ import { REQUEST_BASE_URL } from "../../constants";
  * @Author: jweboy
  * @Date: 2021-01-22 00:53:32
  * @LastEditors: jweboy
- * @LastEditTime: 2021-03-28 22:52:22
+ * @LastEditTime: 2021-03-29 21:42:01
  */
 
 export const get = (config) => {
@@ -35,6 +35,8 @@ export const get = (config) => {
 export const post = (config) => {
   const { url, ...restProps } = config;
   const { userToken } = uni.getStorageSync('token');
+
+  console.log(userToken)
 
   return new Promise((resolve, reject) => {
     uni.request({
