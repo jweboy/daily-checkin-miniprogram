@@ -33,7 +33,7 @@
             <view class="text" v-if="checkin">已有 {{info.lastPunchCount}} 人打卡成功</view>
             <view class="fail" v-if="fail">{{info.activityName}}挑战失败</view>
           </template>
-        </view>    
+        </view>
         <view class="action">
           <daily-button :class-name="status === 'toBeginInNextDayByUser' && 'disabled'"  @on-click="onSubmit" :title="btnTitle"/>
           <checkbox-group class="checkbox" v-if="protocol" @change="onProtocolChange">
@@ -41,7 +41,7 @@
                 <checkbox :value="isRead" style="transform:scale(0.5)" />
               </label>
               <label>
-                <view>我已阅读并同意 
+                <view>我已阅读并同意
                   <text class="protocol">《用户协议》</text>
                 </view>
               </label>
@@ -53,15 +53,15 @@
           <text>打卡成功后分失败人的钱</text>
         </view>
         <view class="step-thumbs">
-          <image :src="require('../../static/glod.png')" mode="aspectFill" class="thumb" /> 
-          <image :src="require('../../static/clock.png')" class="thumb" /> 
-          <image :src="require('../../static/wallet.png')" class="thumb" />  
-        </view> 
+          <image :src="require('../../static/glod.png')" mode="aspectFill" class="thumb" />
+          <image :src="require('../../static/clock.png')" class="thumb" />
+          <image :src="require('../../static/wallet.png')" class="thumb" />
+        </view>
         <view class="step-desc">
           <text>支付保证金</text>
           <text>次日5:00~8:30打卡</text>
           <text>12点瓜分奖金</text>
-        </view> 
+        </view>
       </view>
     </view>
   </view>
@@ -80,14 +80,14 @@ export default {
       this.isRead = !this.isRead;
     },
     onSubmit() {
-      if (!this.isRead) {
-        uni.showToast({
-          title: '请先勾选用户协议',
-          icon: 'none',
-          duration: 1000,
-        });
-        return;
-      }
+      // if (!this.isRead) {
+      //   uni.showToast({
+      //     title: '请先勾选用户协议',
+      //     icon: 'none',
+      //     duration: 1000,
+      //   });
+      //   return;
+      // }
       this.$emit('onSubmit', this.info);
     }
   },
@@ -111,8 +111,11 @@ export default {
       switch(this.status) {
         // case 'toBegin':
         //   return '我不服，我要赚回保证金';
+        // TODO: for test
         case 'firstEnterByUser':
-          return '支付2.00元    立即参与';
+          return '支付0.01元    立即参与';
+        // case 'firstEnterByUser':
+        //   return '支付2.00元    立即参与';
         case 'inProgressInNextDayByUser':
           return '02:37:30结束  立即打卡';
         case 'failInNextDayByUser':
@@ -321,6 +324,6 @@ export default {
       }
     }
   }
-  
+
 }
 </style>

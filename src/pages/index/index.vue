@@ -31,7 +31,7 @@ export default {
 	async mounted() {
 		const token = uni.getStorageSync('token');
 		const pageUrl = '/pages/test-pay/index'
-		
+
 		if(token) {
 			// uni.navigateTo({ url: pageUrl });
 		} else {
@@ -83,7 +83,7 @@ export default {
 
 				showSuccessMsg('登陆成功');
 				setTimeout(() => {
-					uni.navigateTo({ url: '/pages/test-pay/index' });
+					uni.navigateTo({ url: '/pages/checkin/index' });
 				}, 300);
 			} catch(err) {
 				this.asyncRelogin();
@@ -101,7 +101,7 @@ export default {
 	.header {
 		text-align: center;
 	}
-	
+
 	.logo {
 		margin: 100px auto auto auto;
 		height: 200rpx;

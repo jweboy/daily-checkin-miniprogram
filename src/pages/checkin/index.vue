@@ -15,7 +15,6 @@
         <health-list :data="healthRankList" />
       </view>
       <tab-bar />
-      <button @getuserinfo="getUserInfo" open-type="getUserInfo" class="btn">获取当前用户信息</button>
     </view>
     <modal ref="modal">
       <template slot="content" class="modal-content">
@@ -42,6 +41,9 @@ import { getActivityCurrent, getActivityPunchRank } from '@/api/activity';
 import { getApplyStatus } from '@/api/apply';
 import Modal from '@/components/Modal';
 import DailyButton from '@/components/Button'
+import { postPay } from '@/api/pay'
+import { asyncWechatPayment, asyncWechatProvider } from '@/api/weixin'
+import { showSuccessMsg } from '@/utils/global'
 
 let timer = 0;
 
@@ -81,11 +83,22 @@ export default {
     timer = 0;
   },
   // onUnload() {
- 
+
   // },
   methods: {
-    onSubmit(data) {
+    async onSubmit(data) {
       console.log(data)
+      const { prepay_id, ...restProps } = await postPay();
+      const provider = await asyncWechatProvider({  service: 'payment' });
+
+      console.log('provider=>', provider)
+
+      await asyncWechatPayment({
+        provider: provider[0],
+        orderInfo: prepay_id,
+        ...restProps,
+      });
+      showSuccessMsg('🎉 支付成功～');
     },
     setActivityStatus(data) {
       data = {
@@ -163,7 +176,7 @@ export default {
 }
 .navbar {
   padding-left: 24rpx;
-  height: calc(var(--status-bar-height) + 43px);  
+  height: calc(var(--status-bar-height) + 43px);
   line-height: 172rpx;
   background-color: transparent;
   color: #fff;
